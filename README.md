@@ -28,6 +28,7 @@ telepot.api.set_proxy(RROXY_URL)
 bot.getUpdates()[0]['message']['chat']['id']
 ```
 
+
 ### Example
 
 ```python
@@ -52,3 +53,6 @@ tg_callback.set_proxy(proxy_config)
 # start training
 model.fit(x, y, batch_size=32, callbacks=[tg_callback])
 ```
+![tg_example](https://github.com/bulatza/keras_telegram_callbacks/blob/master/images/telegram_example.png)
+
+![graph_example](https://github.com/bulatza/keras_telegram_callbacks/blob/master/images/graphics.png)
