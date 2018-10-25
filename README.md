@@ -1,5 +1,8 @@
 ## Keras callback in Telegram
-Telegram-bot (telepot) callback for your Keras model
+Telegram-bot (telepot) callback for your Keras model.
+Write verbose info for each epoch during the training and send graphics of metrics to your telegram-bot.
+Support proxy if it necessary.  
+
 
 ## For callback you need to get `token` and `chat_id`
 
