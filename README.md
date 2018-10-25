@@ -9,16 +9,16 @@ Telegram-bot (telepot) callback for your Keras model
 
 #### Get `chat_id` between you and bot.
  - Open the chat with your new bot and write to him /start and one more message
- - Run this code
+ - Run this code:
 
 ```python
 import telepot
-# TELEGRAM_BOT_TOKEN = 533254114:AAF9I43PyjHe5uFv2dfPdqBPy4cxofbDnGM
+# TELEGRAM_BOT_TOKEN = 11111111:xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 bot = telepot.Bot(TELEGRAM_BOT_TOKEN)
 bot.getUpdates()[0]['message']['chat']['id']
 ```
 
-If you telegram blocked in your country use proxy
+ - If telegram blocked in your country use with proxy:
 ```python
 import telepot
 bot = telepot.Bot(TELEGRAM_BOT_TOKEN)
@@ -30,7 +30,23 @@ bot.getUpdates()[0]['message']['chat']['id']
 
 
 ### Example
+```python
+from .callbacks import TelegramCallback
 
+...
+# create callback
+config = {
+    'token': '11111111:xxxxxxxxxxxxxxxxxxxxxxxxxxxx',   # paste your bot token
+    'chat_id': 123456789,                               # paste your chat_id
+}
+tg_callback = TelegramCallback(config)
+
+
+# start training
+model.fit(x, y, batch_size=32, callbacks=[tg_callback])
+```
+
+### Example with PROXY
 ```python
 from .callbacks import TelegramCallback
 
