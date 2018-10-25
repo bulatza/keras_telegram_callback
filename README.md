@@ -1,7 +1,6 @@
 ## Keras callback in Telegram
 Telegram-bot (telepot) callback for your Keras model.
-Write verbose info for each epoch during the training and send graphics of metrics to your telegram-bot.
-Support proxy if it necessary.  
+Sends verbose info of each epoch during the training and graphics of changing metrics  to your telegram-bot. Support proxy.
 
 
 ## For callback you need to get `token` and `chat_id`
@@ -21,7 +20,7 @@ bot = telepot.Bot(TELEGRAM_BOT_TOKEN)
 bot.getUpdates()[0]['message']['chat']['id']
 ```
 
- - If telegram blocked in your country use with proxy:
+ - Run this code (with proxy) if telegram blocked in your country:
 ```python
 import telepot
 bot = telepot.Bot(TELEGRAM_BOT_TOKEN)
