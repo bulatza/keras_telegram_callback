@@ -36,7 +36,7 @@ class TelegramCallback(Callback):
             self.log.setdefault(k, [])
             self.log[k].append(v)
     
-    def plot_and_save_graph(self, metric):
+    def plot_graph(self, metric):
         fig, ax = plt.subplots(figsize=self.figsize)
         
         title = metric
@@ -115,5 +115,5 @@ class TelegramCallback(Callback):
         self.valid_on = 'val_loss' in self.log.keys()        
         if self.plot_metrics:
             for metric in self.model.metrics_names:
-                self.plot_and_save_graph(metric)
+                self.plot_graph(metric)
                 self.send_image(self.img_path)
