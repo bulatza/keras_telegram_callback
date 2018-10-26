@@ -33,7 +33,7 @@ bot.getUpdates()[0]['message']['chat']['id']
 
 ### Example
 ```python
-from .callbacks import TelegramCallback
+from callbacks import TelegramCallback
 
 ...
 # create callback
@@ -50,7 +50,7 @@ model.fit(x, y, batch_size=32, callbacks=[tg_callback])
 
 ### Example with PROXY
 ```python
-from .callbacks import TelegramCallback
+from callbacks import TelegramCallback
 
 ...
 # create callback
