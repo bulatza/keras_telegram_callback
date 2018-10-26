@@ -3,21 +3,24 @@ from keras.callbacks import Callback
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 class TelegramCallback(Callback):
 
-    def __init__(self, config, plot_metrics=True, temp_image_path='temp.jpg', plot_n_epochs=100):
+    def __init__(self, config, plot_metrics=True, temp_image_path='temp.jpg', plot_n_epochs=100, 
+                figsize = (10, 5)):
+        
         super(TelegramCallback, self).__init__()
         
         self.chat_id = config['chat_id']
         self.bot = telepot.Bot(config['token'])
-        self.img_path = temp_image_path
         
         self.plot_metrics = plot_metrics
         self.plot_n_epochs = plot_n_epochs
+        self.img_path = temp_image_path
         
-        self.track_vals = {}
+        self.log = {}
         self.epochs = []
+        self.lr_on = False
+        self.valid_on = False
         
     def set_proxy(self, proxy_config):
         if "username" in proxy_config:
@@ -26,34 +29,55 @@ class TelegramCallback(Callback):
         else:
             telepot.api.set_proxy(proxy_config['proxy_url'])
     
-    def update_track_vals(self, epoch, logs={}): 
-        self.epochs.append(epoch), 
+    def add_log(self, epoch, logs={}): 
+        self.epochs.append(epoch)
         for k, v in logs.items():
-            self.track_vals[k].append(v)
+            self.log.setdefault(k, [])
+            self.log[k].append(v)
     
-    def plot_and_save_graph(self):
-        n_plts = len(self.model.metrics_names)
-        plt.figure(figsize = (10, n_plts * 5))
-        for i, k in enumerate(self.model.metrics_names):
+    def plot_and_save_graph(self, metric):
+        fig, ax = plt.subplots(figsize = figsize)
+        
+        title = metric
+        legend = [metric]
+        if metric == 'loss':
+            star_point = [np.argmin(self.log[metric]) , np.min(self.log[metric])]
+            title += " - min: {:.5f};".format(star_point[1]) + "\n"
+            legend.append(metric + ' min')
+        else:
+            star_point = [np.argmax(self.log[metric]) , np.max(self.log[metric])]
+            title += " - max: {:.5f};".format(star_point[1]) + "\n"
+            legend.append(metric + ' max')
+        
+        ax.plot(self.epochs, self.log[metric], '.-', color = 'b')    
+        ax.plot(star_point[0], star_point[1], 'b*', markersize = 12)
+        ax.set_xlabel('epochs')
+
+        if self.valid_on:
+            val_metric = 'val_' + metric
+            title += val_metric
+            legend.append(val_metric)
+            if val_metric == 'val_loss':
+                star_point = [np.argmin(self.log[val_metric]) , np.min(self.log[val_metric])]
+                title += " - min: {:.5f};".format(star_point[1])
+                legend.append(val_metric + ' min')
+            else:
+                star_point = [np.argmax(self.log[val_metric]) , np.max(self.log[val_metric])]
+                title += " - max: {:.5f};".format(star_point[1])
+                legend.append(val_metric + ' max')
             
-            train_max, train_min = np.max(self.track_vals[k]), np.min(self.track_vals[k])
-            val_max, val_min = np.max(self.track_vals['val_' + k]), np.min(self.track_vals['val_' + k])
+            ax.plot(self.epochs, self.log[val_metric], '.-', color = 'r')
+            ax.plot(star_point[0], star_point[1], 'r*', markersize = 12)
 
-            plt.subplot(n_plts, 1, i + 1)
-            plt.title(k + " - max: {:.5f}; min: {:.5f}".format(train_max, train_min) + "\nval_" + \
-                      k + " - max: {:.5f}; min: {:.5f}".format(val_max, val_min))
+        if self.lr_on:
+            ax2 = ax.twinx()
+            ax2.plot(self.epochs, self.log['lr'], color = 'green')
+            ax2.set_ylabel('lr',  color='green')
 
-            plt.plot(self.epochs, self.track_vals[k], '.-', color = 'b')    
-            plt.plot(self.epochs, self.track_vals['val_' + k], '.-', color = 'r')
-
-            # plot min max points
-            plt.plot([np.argmin(self.track_vals[k]), np.argmax(self.track_vals[k])],
-                     [train_min, train_max], 'b*', markersize = 12)
-            plt.plot([np.argmin(self.track_vals['val_' + k]), np.argmax(self.track_vals['val_' + k])],
-                     [val_min, val_max], 'r*', markersize = 12)
-
-            plt.legend([k, 'val_' + k])
-            plt.grid()
+        ax.set_title(title)
+        ax.legend(legend)
+        ax.grid()
+        fig.tight_layout()
         plt.savefig(self.img_path)
     
     def send_message(self, text):
@@ -75,25 +99,20 @@ class TelegramCallback(Callback):
 
     def on_epoch_end(self, epoch, logs={}):
         text = 'Epoch {}.\n'.format(epoch)
-        if epoch == 0:
-            for k in self.model.metrics_names:
-                self.track_vals[k] = []
-                self.track_vals['val_' + k] = []
-                
-        for k in self.model.metrics_names:
-            text += '{}: {:.4f}; {}: {:.4f};\n'.format(k, logs[k], 'val_' + k, logs['val_' + k])
-        
-        #for k, v in logs.items():
-        #    text += '{}: {:.4f};'.format(k, v)
-        
-        self.update_track_vals(epoch, logs)
+        for k, v in logs.items():
+            text += '{}: {:.4f};\n'.format(k, v)
+
+        self.add_log(epoch, logs)
         self.send_message(text)
         
         if self.plot_metrics and (epoch + 1) % self.plot_n_epochs == 0:
             self.plot_and_save_graph()
             self.send_image(self.img_path)
      
-    def on_train_end(self, logs={}):
-        self.plot_and_save_graph()
+    def on_train_end(self, logs={}):  
+        self.lr_on = 'lr' in self.log.keys()
+        self.valid_on = 'val_loss' in self.log.keys()        
         if self.plot_metrics:
-            self.send_image(self.img_path)
+            for metric in self.model.metrics_names:
+                self.plot_and_save_graph(metric)
+                self.send_image(self.img_path)
