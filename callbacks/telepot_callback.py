@@ -22,7 +22,7 @@ class TelegramCallback(Callback):
         self.epochs = []
         self.lr_on = False
         self.valid_on = False
-        
+    
     def set_proxy(self, proxy_config):
         if "username" in proxy_config:
             basic_auth = (proxy_config['username'],  proxy_config['password'])
@@ -30,7 +30,7 @@ class TelegramCallback(Callback):
         else:
             telepot.api.set_proxy(proxy_config['proxy_url'])
     
-    def add_log(self, epoch, logs={}): 
+    def add_log(self, epoch, logs={}):
         self.epochs.append(epoch)
         for k, v in logs.items():
             self.log.setdefault(k, [])
@@ -50,7 +50,7 @@ class TelegramCallback(Callback):
             title += " - max: {:.5f};".format(star_point[1]) + "\n"
             legend.append(metric + ' max')
         
-        ax.plot(self.epochs, self.log[metric], '.-', color = 'b')    
+        ax.plot(range(len(self.log[metric])), self.log[metric], '.-', color = 'b')    
         ax.plot(star_point[0], star_point[1], 'b*', markersize = 12)
         ax.set_xlabel('epochs')
 
@@ -67,12 +67,12 @@ class TelegramCallback(Callback):
                 title += " - max: {:.5f};".format(star_point[1])
                 legend.append(val_metric + ' max')
             
-            ax.plot(self.epochs, self.log[val_metric], '.-', color = 'r')
+            ax.plot(range(len(self.log[val_metric])), self.log[val_metric], '.-', color = 'r')
             ax.plot(star_point[0], star_point[1], 'r*', markersize = 12)
 
         if self.lr_on:
             ax2 = ax.twinx()
-            ax2.plot(self.epochs, self.log['lr'], color = 'green')
+            ax2.plot(range(len(self.log['lr'])), self.log['lr'], color = 'green')
             ax2.set_ylabel('lr',  color='green')
 
         ax.set_title(title)
