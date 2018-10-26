@@ -6,7 +6,7 @@ import numpy as np
 class TelegramCallback(Callback):
 
     def __init__(self, config, plot_metrics=True, temp_image_path='temp.jpg', plot_n_epochs=100, 
-                figsize = (10, 5)):
+                figsize=(10, 5)):
         
         super(TelegramCallback, self).__init__()
         
@@ -16,6 +16,7 @@ class TelegramCallback(Callback):
         self.plot_metrics = plot_metrics
         self.plot_n_epochs = plot_n_epochs
         self.img_path = temp_image_path
+        self.figsize = figsize
         
         self.log = {}
         self.epochs = []
@@ -36,7 +37,7 @@ class TelegramCallback(Callback):
             self.log[k].append(v)
     
     def plot_and_save_graph(self, metric):
-        fig, ax = plt.subplots(figsize = figsize)
+        fig, ax = plt.subplots(figsize=self.figsize)
         
         title = metric
         legend = [metric]
