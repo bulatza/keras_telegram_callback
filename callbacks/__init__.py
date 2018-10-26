@@ -1,1 +1,1 @@
-from .telegram_callback import TelegramCallback
+from .telepot_callback import TelegramCallback
